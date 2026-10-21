@@ -1,97 +1,59 @@
+# 💰 Simulador de Investimentos em Fundos Imobiliários (FIIs)
 
-# 📊 Simulador de Investimentos em Fundos Imobiliários (FIIs)
-
-Ferramenta interativa desenvolvida em Microsoft Excel para simulação de acúmulo patrimonial e projeção de renda passiva mensal (dividendos) através de Fundos Imobiliários (FIIs), com alocação customizada por perfil de investidor.
-
-> Projeto desenvolvido como Desafio de Projeto da formação na **DIO (Digital Innovation One)** sob orientação do Expert **Felipe Aguiar (Felipão)**.
+Ferramenta desenvolvida em Excel com foco em experiência de usuário (estilo aplicativo) para simulação de investimentos em Fundos Imobiliários, automatizando o cálculo de aportes, projeção de patrimônio a longo prazo e distribuição inteligente de ativos conforme o perfil de risco do investidor.
 
 ---
 
-## ❓ Perguntas que a Ferramenta Responde
+## 🎯 Perguntas de Negócio que a Ferramenta Responde
 
-A ferramenta foi estruturada para responder diretamente às 5 perguntas fundamentais de negócio do investidor:
+A planilha foi projetada para responder de forma rápida e intuitiva a cinco perguntas essenciais para qualquer investidor:
+1. **Quanto investir por mês?** $\rightarrow$ Definido na seção de investimentos mensais (com sugestão automatizada baseada em 30% do salário).
+2. **Por quantos anos?** $\rightarrow$ Definido pelo horizonte de tempo da simulação.
+3. **Qual a taxa de rendimento mensal?** $\rightarrow$ Taxa esperada de retorno sobre o capital aplicado.
+4. **Quanto de patrimônio vai acumular?** $\rightarrow$ Calculado dinamicamente utilizando a função `VF` (*Future Value*).
+5. **Quanto vai receber de dividendos por mês?** $\rightarrow$ Renda passiva mensal gerada a partir do patrimônio acumulado e do rendimento da carteira.
 
-| Pergunta de Negócio                          | Onde aparece a resposta na planilha                                                  |
-| :------------------------------------------- | :----------------------------------------------------------------------------------- |
-| **1. Quanto investir por mês?**              | Painel de Entrada (`C6`) — com campo editável de aporte e sugestão de 30% do salário |
-| **2. Por quantos anos?**                     | Painel de Entrada (`C7`) — definição do prazo total do projeto                       |
-| **3. Qual a taxa de rendimento mensal?**     | Painel de Entrada (`C8`) — taxa percentual de dividend yield médio projetado         |
-| **4. Quanto de patrimônio vai acumular?**    | Card de Resultado Principal e Tabela de Projeção (2 a 30 anos)                       |
-| **5. Quanto vai receber de dividendos/mês?** | Card de Resultado Principal e Tabela de Projeção (calculado sobre o saldo final)     |
+As respostas principais ficam evidentes no painel principal da **Planilha1 (Calculadora)**.
 
 ---
 
-## 🧮 Lógica de Cálculos e Fórmulas
+## ⚙️ Como os Cálculos e Funções Entram na Ferramenta
 
-### 1. Função `VF` (Valor Futuro)
-
-A função `VF` é utilizada para calcular o patrimônio acumulado ao longo do tempo considerando os aportes mensais e a taxa de juros composta.
-
-```excel
-=VF(taxa_mensal; prazo_anos * 12; -aporte; 0)
-```
-
-- **`taxa_mensal`:** Rendimento mensal aplicado.
-- **`prazo_anos * 12`:** Conversão do prazo em anos para total de meses.
-- **`-aporte`:** O valor mensal investido (com sinal negativo, pois representa saída de caixa para o Excel).
-- **`0`:** Indica que não há patrimônio inicial prévio (ou valor presente zerado).
-
-### 2. Função `PROCV` com Chave Composta
-
-Para determinar o percentual de investimento em cada um dos 6 tipos de FIIs, foi utilizada uma **chave composta**, pois o `PROCV` tradicional realiza buscas baseadas em apenas uma coluna.
-
-```excel
-=PROCV(perfil_investidor & Tipo_FII; Apoio!$A$2:$D$19; 4; FALSO)
-```
-
-- **Concatenação (`&`):** Junta o perfil escolhido (`Conservador`, `Moderado` ou `Arrojado`) com o nome do tipo de fundo (ex: `Tijolo - Shopping`).
-- **Busca:** Procura o texto resultante (ex: `"ConservadorTijolo - Shopping"`) na matriz da aba `Apoio`.
-- **Retorno:** Retorna a 4ª coluna da tabela de apoio, correspondente ao percentual exato daquela combinação.
+* **Função VF (Future Value):** Utilizada para projetar o crescimento do patrimônio composto ao longo dos meses. 
+  * *Fórmula aplicada:* `=VF(TAXA_MENSAL, QTD_ANOS*12, APORTE*-1)`
+* **PROCV com Chave Composta:** Na aba de apoio (`Planilha2`), foi criada uma coluna de chave composta (`PERFIL-TIPO DE FII`) unindo o perfil do investidor ao tipo de fundo. Na calculadora, o `VLOOKUP` busca automaticamente o percentual correspondente ao perfil selecionado na lista suspensa.
+  * *Fórmula aplicada:* `=VLOOKUP($C$23&"-"&B27, Planilha2!$A:$D, 4, FALSE)`
 
 ---
 
 ## 🏷️ Intervalos Nomeados Criados
 
-Para evitar o uso de referências obscuras como `C4` ou `C8` e tornar as fórmulas legíveis para qualquer usuário, foram cadastrados os seguintes intervalos nomeados:
-
-- **`salario`**: Célula do salário mensal informado pelo usuário.
-- **`sugestao_aporte`**: Célula com o cálculo de 30% do salário (`=salario * 0,30`).
-- **`aporte`**: Célula com o valor mensal efetivamente aplicado no simulador.
-- **`prazo_anos`**: Célula com a quantidade de anos da simulação.
-- **`taxa_mensal`**: Célula com a taxa de dividend yield estimada ao mês.
-- **`perfil_investidor`**: Célula com a seleção do perfil via validação de dados em lista.
-
----
-
-## 📊 Percentuais de Cada Perfil e Origem
-
-A divisão da carteira entre os 6 tipos de fundos imobiliários segue uma lógica de diversificação e tolerância a risco. **Cada perfil soma exatamente 100%**:
-
-| Tipo de FII                 | Conservador | Moderado | Arrojado | Origem / Racional Estratégico                     |
-| :-------------------------- | :---------: | :------: | :------: | :------------------------------------------------ |
-| **Tijolo - Shopping**       |     10%     |   20%    |   25%    | Foco em valorização e resiliência no varejo       |
-| **Tijolo - Logística**      |     25%     |   25%    |   20%    | Contratos atípicos e previsibilidade de caixa     |
-| **Tijolo - Escritórios**    |     15%     |   15%    |   20%    | Renda imobiliária corporativa de grande porte     |
-| **Papel / CRIs**            |     35%     |   20%    |   10%    | Alta proteção contra inflação e previsibilidade   |
-| **FoFs (Fundos de Fundos)** |     10%     |   10%    |   10%    | Diversificação automática via gestão profissional |
-| **Híbridos / Outros**       |     5%      |   10%    |   15%    | Busca por maior alpha/retorno suplementar         |
-| **TOTAL**                   |  **100%**   | **100%** | **100%** | **Garantia de alocação integral dos aportes**     |
-
-_Origem das estimativas:_ Alocações baseadas em relatórios públicos de análise de mercado e recomendações genéricas de diversificação patrimonial (utilizadas apenas para fins didáticos).
+Para facilitar a leitura das fórmulas e manutenção da planilha, foram definidos os seguintes intervalos nomeados:
+* `SALARIO`: Célula de referência para remuneração mensal.
+* `SUG_INVESTIMENTO`: Sugestão de aporte de 30% do salário.
+* `APORTE`: Valor efetivamente investido por mês.
+* `QTD_ANOS`: Horizonte de tempo da simulação.
+* `TAXA_MENSAL`: Taxa de rendimento aplicada por mês.
+* `PATRIMONIO`: Resultado do patrimônio acumulado.
+* `REND_CARTEIRA`: Taxa de retorno de dividendos da carteira.
 
 ---
 
-## 🔄 Mudanças em Relação à Ferramenta do Expert
+## 📊 Perfis de Investidor e Distribuição de Aportes
 
-Para agregar valor e evoluir o projeto original do Felipão, foram implementadas as seguintes melhorias:
+A tabela de apoio (`Planilha2`) estrutura a alocação percentual para cada perfil, garantindo que a soma de cada categoria seja exatamente **100%**:
 
-1. **Gráfico Dinâmico de Rosca:** Adicionada visualização gráfica da distribuição da carteira que se atualiza automaticamente ao alterar o perfil no menu suspenso.
-2. **Cenário Alternativo com Sugestão de 30%:** Implementado um comparativo visual mostrando a diferença patrimonial final entre investir o aporte informado versus a sugestão automatizada de 30% do salário.
-3. **Formatação de Aplicativo:** Ocultação de barras de fórmulas, títulos de linhas/colunas e linhas de grade para oferecer uma experiência limpa de uso.
+* **Conservador:** 30% Papel | 50% Tijolo | 10% Híbridos | 10% FOFs | 0% Desenvolvimento | 0% Hotelarias *(Total: 100%)*
+* **Moderado:** 32% Papel | 35% Tijolo | 8% Híbridos | 5% FOFs | 10% Desenvolvimento | 10% Hotelarias *(Total: 100%)*
+* **Agressivo:** 50% Papel | 10% Tijolo | 5% Híbridos | 5% FOFs | 20% Desenvolvimento | 10% Hotelarias *(Total: 100%)*
 
-## ✅ Checklist de Validação Antes do Envio
+---
 
-- [x] A planilha abre sem erro de fórmula e responde às cinco perguntas.
-- [x] Trocar o perfil na lista muda a divisão do aporte, e cada perfil soma 100%.
-- [x] O salário e os valores do arquivo publicado são fictícios/exemplo.
+## 🚀 O que foi Evoluído na Ferramenta
+
+* **Interface Limpa:** Linhas de grade ocultas e formatação condicional/visual com cara de dashboard corporativo.
+* **Automação de Aporte:** Sugestão inteligente de 30% do salário integrada por fórmula nomeada.
+* **Dinâmica por Perfil:** Validação de dados em lista suspensa na célula de perfil, alterando instantaneamente a divisão do aporte entre os 6 tipos de FIIs na tabela inferior.
+
+---
 
